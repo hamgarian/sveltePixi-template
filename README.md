@@ -65,32 +65,68 @@ The built files will be in the `build` directory.
 
 ### Deploying to GitHub Pages
 
-1. Update `svelte.config.js` to use the static adapter:
+> **Note:** You must enable GitHub Pages in your repository settings first (set the source to the `gh-pages` branch or `/docs` folder as appropriate).
+
+This template already includes a universal GitHub Actions deploy workflow (`.github/workflows/deploy.yml`) that will automatically build and deploy your site to GitHub Pages on every push to `main`.
+
+Make sure you have the static adapter enabled in your `svelte.config.js`:
+
 ```js
 import adapter from '@sveltejs/adapter-static';
 ```
 
-2. Add a GitHub Actions workflow (`.github/workflows/deploy.yml`):
+The workflow will handle everything else. Here is what it looks like:
+
 ```yaml
 name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ['main']
+    branches: 'main'
 
 jobs:
-  build:
+  build_site:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
-      - run: npm install
-      - run: npm run build
-      - uses: JamesIves/github-pages-deploy-action@v4
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: build
+        env:
+          BASE_PATH: '/${{ github.event.repository.name }}'
+        run: |
+          npm run build
+
+      - name: Upload Artifacts
+        uses: actions/upload-pages-artifact@v3
         with:
-          folder: build
+          path: 'build/'
+
+  deploy:
+    needs: build_site
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
 ```
 
 ## Usage
