@@ -2,6 +2,9 @@
 
 A template for creating web games or interactive applications using SvelteKit and PixiJS, optimized for static site deployment (e.g., GitHub Pages).
 
+# Preview
+https://hamgarian.github.io/sveltePixi-template/
+
 ## Features
 
 - 🎮 PixiJS v8 integration
